@@ -1,0 +1,27 @@
+spring:
+  web:
+    resources:
+      static-locations: file:/Users/kimjieun/Desktop/upload/
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/gaehwa?currentSchema=public&characterEncoding=UTF-8
+    driver-class-name: org.postgresql.Driver
+    username: gaehwa
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  port: 8080
+  address: 0.0.0.0
+
+file:
+  upload-dir: /Users/kimjieun/Desktop/upload/
+
