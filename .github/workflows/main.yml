@@ -3,28 +3,48 @@ name: Deploy to Azure VM
 on:
   push:
     branches:
-      - main  # main 브랜치 푸시 시 자동 배포
+      - main  # main 브랜치에 푸시 시 자동 배포
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ JAR 파일만 가져오기 (옵션, 필요 없으면 생략 가능)
+      # 1️⃣ 코드 체크아웃
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # 전체 커밋 가져오기, 최신 상태 확인용
 
-      # 2️⃣ SCP로 JAR 파일 Azure VM에 복사
+      # 2️⃣ JDK 설치 (Java 21, Temurin)
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      # 3️⃣ Gradle 빌드 (테스트 제외)
+      - name: Build with Gradle
+        run: ./gradlew clean build -x test
+
+      # 4️⃣ JAR 이름에 커밋 SHA 포함해서 항상 새로운 이름으로 생성
+      - name: Rename JAR with commit SHA
+        run: |
+          COMMIT_SHA=$(git rev-parse --short HEAD)
+          mv build/libs/gaehwa2-0.0.1-SNAPSHOT.jar build/libs/gaehwa2-$COMMIT_SHA.jar
+          echo "NEW_JAR=gaehwa2-$COMMIT_SHA.jar" >> $GITHUB_ENV
+
+      # 5️⃣ Azure VM으로 JAR 복사
       - name: Copy JAR to Azure VM
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.AZURE_VM_HOST }}
           username: ${{ secrets.AZURE_VM_USER }}
           key: ${{ secrets.AZURE_SSH_KEY }}
-          source: "build/libs/gaehwa2-0.0.1-SNAPSHOT.jar"
+          source: "build/libs/${{ env.NEW_JAR }}"
           target: "/home/gaehwa/back_end/"
 
-      # 3️⃣ SSH로 애플리케이션 재시작
+      # 6️⃣ VM에서 기존 애플리케이션 종료 후 새 JAR 실행
       - name: Restart application on Azure VM
         uses: appleboy/ssh-action@v0.1.10
         with:
@@ -37,4 +57,4 @@ jobs:
               kill -9 $PID
             fi
             cd /home/gaehwa/back_end
-            nohup java -jar gaehwa2-0.0.1-SNAPSHOT.jar > gaehwa.log 2>&1 &
+            nohup java -jar ${{ env.NEW_JAR }} > gaehwa.log 2>&1 &
