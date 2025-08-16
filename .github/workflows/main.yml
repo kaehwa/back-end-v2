@@ -1,42 +1,30 @@
 name: Deploy to Azure VM
 
-# main 브랜치에 푸시될 때 자동 실행
 on:
   push:
     branches:
-      - main
+      - main  # main 브랜치 푸시 시 자동 배포
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ GitHub 저장소에서 코드 체크아웃
+      # 1️⃣ JAR 파일만 가져오기 (옵션, 필요 없으면 생략 가능)
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2️⃣ JDK 설치 (Java 21, Temurin)
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-
-      # 3️⃣ Gradle로 빌드 (테스트 제외)
-      - name: Build with Gradle
-        run: ./gradlew clean build -x test
-
-      # 4️⃣ Azure VM으로 JAR 복사
+      # 2️⃣ SCP로 JAR 파일 Azure VM에 복사
       - name: Copy JAR to Azure VM
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.AZURE_VM_HOST }}      # VM public IP
-          username: ${{ secrets.AZURE_VM_USER }}  # VM 사용자
-          key: ${{ secrets.AZURE_SSH_KEY }}       # SSH private key (secrets에 저장)
+          host: ${{ secrets.AZURE_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          key: ${{ secrets.AZURE_SSH_KEY }}
           source: "build/libs/gaehwa2-0.0.1-SNAPSHOT.jar"
           target: "/home/gaehwa/back_end/"
 
-      # 5️⃣ VM에서 기존 애플리케이션 종료 후 새 JAR 실행
+      # 3️⃣ SSH로 애플리케이션 재시작
       - name: Restart application on Azure VM
         uses: appleboy/ssh-action@v0.1.10
         with:
