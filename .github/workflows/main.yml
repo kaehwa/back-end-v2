@@ -3,7 +3,7 @@ name: Deploy to Azure VM
 on:
   push:
     branches:
-      - main   # main 브랜치 푸시 시 자동 배포
+      - main  # main 브랜치에 푸시 시 자동 배포
 
 jobs:
   deploy:
@@ -27,24 +27,17 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean build -x test
 
-      # 4️⃣ JAR 이름에 커밋 SHA 포함
-      - name: Rename JAR with commit SHA
-        run: |
-          COMMIT_SHA=$(git rev-parse --short HEAD)
-          mv build/libs/gaehwa2-0.0.1-SNAPSHOT.jar build/libs/gaehwa2-$COMMIT_SHA.jar
-          echo "NEW_JAR=gaehwa2-$COMMIT_SHA.jar" >> $GITHUB_ENV
-
-      # 5️⃣ Azure VM으로 JAR 복사
+      # 4️⃣ Azure VM으로 JAR 복사 (항상 같은 이름으로 덮어쓰기)
       - name: Copy JAR to Azure VM
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.AZURE_VM_HOST }}
           username: ${{ secrets.AZURE_VM_USER }}
           key: ${{ secrets.AZURE_SSH_KEY }}
-          source: "build/libs/${{ env.NEW_JAR }}"
-          target: "/home/gaehwa/back_end/"
+          source: "build/libs/gaehwa2-0.0.1-SNAPSHOT.jar"
+          target: "/home/gaehwa/back_end/gaehwa2-0.0.1-SNAPSHOT.jar"  # 덮어쓰기
 
-      # 6️⃣ VM에서 기존 애플리케이션 종료 후 새 JAR 실행
+      # 5️⃣ VM에서 기존 애플리케이션 종료 후 새 JAR 실행
       - name: Restart application on Azure VM
         uses: appleboy/ssh-action@v0.1.10
         with:
@@ -52,13 +45,9 @@ jobs:
           username: ${{ secrets.AZURE_VM_USER }}
           key: ${{ secrets.AZURE_SSH_KEY }}
           script: |
-            # 기존 gaehwa2 관련 모든 JAR 종료
-            PID=$(ps aux | grep 'gaehwa2-.*\.jar' | grep -v grep | awk '{print $2}')
+            PID=$(ps aux | grep 'gaehwa2-0.0.1-SNAPSHOT.jar' | grep -v grep | awk '{print $2}')
             if [ -n "$PID" ]; then
               kill -9 $PID
             fi
-
             cd /home/gaehwa/back_end
-
-            # 새 JAR 실행
-            nohup java -jar ${{ env.NEW_JAR }} > gaehwa.log 2>&1 &
+            nohup java -jar gaehwa2-0.0.1-SNAPSHOT.jar > gaehwa.log 2>&1 &
