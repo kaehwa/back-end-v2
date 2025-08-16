@@ -3,7 +3,7 @@ name: Deploy to Azure VM
 on:
   push:
     branches:
-      - main  # main 브랜치에 푸시 시 자동 배포
+      - main   # main 브랜치 푸시 시 자동 배포
 
 jobs:
   deploy:
@@ -14,7 +14,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # 전체 커밋 가져오기, 최신 상태 확인용
+          fetch-depth: 0   # 전체 커밋 가져오기
 
       # 2️⃣ JDK 설치 (Java 21, Temurin)
       - name: Set up JDK
@@ -27,7 +27,7 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean build -x test
 
-      # 4️⃣ JAR 이름에 커밋 SHA 포함해서 항상 새로운 이름으로 생성
+      # 4️⃣ JAR 이름에 커밋 SHA 포함
       - name: Rename JAR with commit SHA
         run: |
           COMMIT_SHA=$(git rev-parse --short HEAD)
@@ -52,9 +52,13 @@ jobs:
           username: ${{ secrets.AZURE_VM_USER }}
           key: ${{ secrets.AZURE_SSH_KEY }}
           script: |
-            PID=$(ps aux | grep gaehwa2-0.0.1-SNAPSHOT.jar | grep -v grep | awk '{print $2}')
+            # 기존 gaehwa2 관련 모든 JAR 종료
+            PID=$(ps aux | grep 'gaehwa2-.*\.jar' | grep -v grep | awk '{print $2}')
             if [ -n "$PID" ]; then
               kill -9 $PID
             fi
+
             cd /home/gaehwa/back_end
+
+            # 새 JAR 실행
             nohup java -jar ${{ env.NEW_JAR }} > gaehwa.log 2>&1 &
