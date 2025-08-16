@@ -41,7 +41,7 @@ jobs:
           host: ${{ secrets.AZURE_VM_HOST }}
           username: ${{ secrets.AZURE_VM_USER }}
           key: ${{ secrets.AZURE_SSH_KEY }}
-          source: "${{ env.NEW_JAR }}"   # 파일명만
+          source: "build/libs/${{ env.NEW_JAR }}"   # 파일명만
           target: "/home/gaehwa/back_end/"
           strip_components: 2             # build/libs/ 폴더 구조 제거
 
