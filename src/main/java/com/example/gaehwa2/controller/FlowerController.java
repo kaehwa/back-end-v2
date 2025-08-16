@@ -4,6 +4,7 @@ import com.example.gaehwa2.dto.request.FlowerRequestDto;
 import com.example.gaehwa2.dto.request.RecommendMessageRequestDto;
 import com.example.gaehwa2.dto.response.RecommendMessageResponseDto;
 import com.example.gaehwa2.entity.Flower;
+import com.example.gaehwa2.repository.FlowerRepository;
 import com.example.gaehwa2.service.FlowerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/flowers")
@@ -21,6 +24,7 @@ import java.io.IOException;
 public class FlowerController {
 
     private final FlowerService flowerService;
+    private final FlowerRepository flowerRepository;
 
     @PostMapping("/text")
     @Operation(summary = "꽃 주문 정보 저장", description = "누가, 누구에게, 관계, 무슨 날, 선물 예정일, 히스토리를 저장합니다.")
@@ -28,17 +32,29 @@ public class FlowerController {
         return ResponseEntity.ok(flowerService.saveFlowerText(dto));
     }
 
-    @PostMapping("/{id}/image")
-    @Operation(summary = "꽃 카드 이미지 업로드", description = "꽃 ID를 기반으로 카드 이미지를 업로드합니다.")
-    public ResponseEntity<Flower> saveFlowerImage(@PathVariable Long id,
-                                                  @RequestParam("file") MultipartFile file) throws IOException {
+    @PostMapping(value = "/{id}/image", consumes = "multipart/form-data")
+    @Operation(summary = "꽃 카드 이미지 업로드(png,jpg,jpeg 혹시나 오류날까봐 확장자 제한 걸어놨슴다~)", description = "꽃 ID를 기반으로 카드 이미지를 업로드합니다.")
+    public ResponseEntity<Flower> saveFlowerImage(
+            @PathVariable Long id,
+            @RequestPart("file") MultipartFile file) throws IOException {
+        String filename = file.getOriginalFilename();
+        if (filename == null ||
+                !(filename.endsWith(".png") || filename.endsWith(".jpg") || filename.endsWith(".jpeg"))) {
+            throw new IllegalArgumentException("지원하지 않는 이미지 파일 형식입니다. (.png, .jpg, .jpeg만 가능)");
+        }
         return ResponseEntity.ok(flowerService.saveFlowerImage(id, file));
     }
 
-    @PostMapping("/{id}/voice")
-    @Operation(summary = "꽃 카드 음성 업로드", description = "꽃 ID를 기반으로 카드 음성을 업로드합니다.")
-    public ResponseEntity<Flower> saveFlowerVoice(@PathVariable Long id,
-                                                  @RequestParam("file") MultipartFile file) throws IOException {
+    @PostMapping(value = "/{id}/voice", consumes = "multipart/form-data")
+    @Operation(summary = "꽃 카드 음성 업로드(mp3,wav 혹시나 오류날까봐 확장자 제한 걸어놨슴다~)", description = "꽃 ID를 기반으로 카드 음성을 업로드합니다.")
+    public ResponseEntity<Flower> saveFlowerVoice(
+            @PathVariable Long id,
+            @RequestPart("file") MultipartFile file) throws IOException {
+        String filename = file.getOriginalFilename();
+        if (filename == null ||
+                !(filename.endsWith(".mp3") || filename.endsWith(".wav"))) {
+            throw new IllegalArgumentException("지원하지 않는 음성 파일 형식입니다. (.mp3, .wav만 가능)");
+        }
         return ResponseEntity.ok(flowerService.saveFlowerVoice(id, file));
     }
 
@@ -71,6 +87,39 @@ public class FlowerController {
                 .build();
 
         return ResponseEntity.ok(responseDto);
+    }
+
+
+    // 확인용: ID 넣으면 이미지/보이스 크기 확인
+    @GetMapping("/{id}/check-media")
+    @Operation(summary = "/image,/voice api 쏘고 잘들어갔는지 확인용", description = "파일 유무와 크기 확인가능!!")
+    public ResponseEntity<Map<String, Object>> checkFiles(@PathVariable Long id) {
+        Flower flower = flowerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("꽃 ID를 찾을 수 없습니다."));
+
+        Map<String, Object> result = new HashMap<>();
+
+        // 이미지 확인
+        byte[] image = flower.getCardImage();
+        if (image != null) {
+            result.put("imageExists", true);
+            result.put("imageSize", image.length); // 바이트 단위
+        } else {
+            result.put("imageExists", false);
+            result.put("imageSize", 0);
+        }
+
+        // 보이스 확인
+        byte[] voice = flower.getCardVoice();
+        if (voice != null) {
+            result.put("voiceExists", true);
+            result.put("voiceSize", voice.length); // 바이트 단위
+        } else {
+            result.put("voiceExists", false);
+            result.put("voiceSize", 0);
+        }
+
+        return ResponseEntity.ok(result);
     }
 }
 

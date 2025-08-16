@@ -2,6 +2,9 @@ package com.example.gaehwa2.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 //import org.hibernate.annotations.Type;
 //import com.pgvector.hibernate.VectorType;
 
@@ -40,12 +43,14 @@ public class Flower {
     @Column(columnDefinition = "TEXT")
     private String history;
 
-    // 카드 이미지
     @Lob
+    @JdbcTypeCode(SqlTypes.BINARY) // bytea에 대응
+    @Column(name = "card_image", nullable = true)
     private byte[] cardImage;
 
-    // 카드 음성
     @Lob
+    @JdbcTypeCode(SqlTypes.BINARY)
+    @Column(name = "card_voice", nullable = true)
     private byte[] cardVoice;
 
 //    @Column(columnDefinition = "vector(3)")

@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.Base64;
 
 @Service
 @RequiredArgsConstructor
@@ -29,12 +30,14 @@ public class FlowerService {
                 .build();
         return flowerRepository.save(flower);
     }
-
     // 2. 이미지 저장
     public Flower saveFlowerImage(Long id, MultipartFile file) throws IOException {
         Flower flower = flowerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("해당 ID의 꽃 데이터를 찾을 수 없습니다."));
+
+        // MultipartFile에서 바로 byte[] 저장
         flower.setCardImage(file.getBytes());
+
         return flowerRepository.save(flower);
     }
 
@@ -42,9 +45,13 @@ public class FlowerService {
     public Flower saveFlowerVoice(Long id, MultipartFile file) throws IOException {
         Flower flower = flowerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("해당 ID의 꽃 데이터를 찾을 수 없습니다."));
+
+        // MultipartFile에서 바로 byte[] 저장
         flower.setCardVoice(file.getBytes());
+
         return flowerRepository.save(flower);
     }
+
 
     @Transactional(readOnly = true)
     public String getRecommendMessage(Long id) {
