@@ -41,8 +41,10 @@ jobs:
           host: ${{ secrets.AZURE_VM_HOST }}
           username: ${{ secrets.AZURE_VM_USER }}
           key: ${{ secrets.AZURE_SSH_KEY }}
-          source: "build/libs/${{ env.NEW_JAR }}"
-          target: "/home/gaehwa/back_end/"   # 파일명 없이 폴더만
+          source: "${{ env.NEW_JAR }}"   # 파일명만
+          target: "/home/gaehwa/back_end/"
+          strip_components: 2             # build/libs/ 폴더 구조 제거
+
 
       # 6️⃣ VM에서 기존 애플리케이션 종료 후 새 JAR 실행
       - name: Restart application on Azure VM
