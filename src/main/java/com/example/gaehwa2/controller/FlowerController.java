@@ -33,7 +33,7 @@ public class FlowerController {
     }
 
     @PostMapping(value = "/{id}/image", consumes = "multipart/form-data")
-    @Operation(summary = "꽃 카드 이미지 업로드(png,jpg,jpeg 혹시나 오류날까봐 확장자 제한 걸어놨슴다~)", description = "꽃 ID를 기반으로 카드 이미지를 업로드합니다.")
+    @Operation(summary = "꽃 카드 이미지 업로드(png,jpg,jpeg 혹시나 오류날까봐 확장자 제한, 10mb(error413,크기제한) 걸어놨슴다~)", description = "꽃 ID를 기반으로 카드 이미지를 업로드합니다.")
     public ResponseEntity<Flower> saveFlowerImage(
             @PathVariable Long id,
             @RequestPart("file") MultipartFile file) throws IOException {
@@ -46,7 +46,7 @@ public class FlowerController {
     }
 
     @PostMapping(value = "/{id}/voice", consumes = "multipart/form-data")
-    @Operation(summary = "꽃 카드 음성 업로드(mp3,wav 혹시나 오류날까봐 확장자 제한 걸어놨슴다~)", description = "꽃 ID를 기반으로 카드 음성을 업로드합니다.")
+    @Operation(summary = "꽃 카드 음성 업로드(mp3,wav 혹시나 오류날까봐 확장자 제한, 10mb(error413,크기제한) 걸어놨슴다~)", description = "꽃 ID를 기반으로 카드 음성을 업로드합니다.")
     public ResponseEntity<Flower> saveFlowerVoice(
             @PathVariable Long id,
             @RequestPart("file") MultipartFile file) throws IOException {
