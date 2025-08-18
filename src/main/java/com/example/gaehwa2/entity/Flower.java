@@ -53,9 +53,9 @@ public class Flower {
     @Column(name = "card_voice", nullable = true)
     private byte[] cardVoice;
 
-//    @Column(columnDefinition = "vector(3)")
-//    @Type(VectorType.class)
-//    private float[] recommendRgbVector;
+    @Column(columnDefinition = "vector(15)")
+    @Convert(converter = VectorConverter.class)
+    private float[] recommendRgbVector;
 
     @Column(columnDefinition = "TEXT")
     private String recommendMessage;
