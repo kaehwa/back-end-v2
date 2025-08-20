@@ -1,8 +1,11 @@
 package com.example.gaehwa2.service;
 
 import com.example.gaehwa2.dto.request.FlowerRequestDto;
+import com.example.gaehwa2.dto.response.FastApiRecommendResponseDto;
 import com.example.gaehwa2.entity.Flower;
 import com.example.gaehwa2.repository.FlowerRepository;
+import com.example.gaehwa2.utils.ColorUtils;
+import com.pgvector.PGvector;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -10,16 +13,30 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
+
+
+
 
 @Service
 @RequiredArgsConstructor
 public class FlowerService {
 
     private final FlowerRepository flowerRepository;
-
+    private final FastApiService fastApiService;
     // 1. 텍스트 데이터 저장
     public Flower saveFlowerText(FlowerRequestDto dto) {
+
+        // 1. FastAPI 호출 → 응답 DTO 받기
+        FastApiRecommendResponseDto response = fastApiService.callFastApi(dto);
+
+        // 2. 응답에서 rgb_selected(2D 배열) → 12차원 벡터 변환
+        float[] flattened = ColorUtils.flattenRgb(response.getRgb_selected());
+        PGvector vector = new PGvector(flattened);
+
+        // 3. 요청 DTO + 응답 DTO → 엔티티 저장
         Flower flower = Flower.builder()
                 .flowerFrom(dto.getFlowerFrom())
                 .flowerTo(dto.getFlowerTo())
@@ -27,8 +44,12 @@ public class FlowerService {
                 .anniversary(dto.getAnniversary())
                 .anvDate(dto.getAnvDate())
                 .history(dto.getHistory())
+                .recommendRgbVector(vector)              // FastAPI 응답
+                .recommendMessage(response.getMessage()) // FastAPI 응답
                 .build();
+
         return flowerRepository.save(flower);
+
     }
     // 2. 이미지 저장
     public Flower saveFlowerImage(Long id, MultipartFile file) throws IOException {
@@ -67,5 +88,9 @@ public class FlowerService {
         flower.setRecommendMessage(recommendMessage);
         return flower.getRecommendMessage();
     }
+
+
 }
+
+
 

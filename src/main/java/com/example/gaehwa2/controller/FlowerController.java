@@ -2,11 +2,17 @@ package com.example.gaehwa2.controller;
 
 import com.example.gaehwa2.dto.request.FlowerRequestDto;
 import com.example.gaehwa2.dto.request.RecommendMessageRequestDto;
+import com.example.gaehwa2.dto.response.BouquetResponseDto;
 import com.example.gaehwa2.dto.response.RecommendMessageResponseDto;
 import com.example.gaehwa2.entity.Flower;
 import com.example.gaehwa2.repository.FlowerRepository;
+import com.example.gaehwa2.service.BouquetService;
 import com.example.gaehwa2.service.FlowerService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -24,6 +31,7 @@ import java.util.Map;
 public class FlowerController {
 
     private final FlowerService flowerService;
+    private final BouquetService bouquetService;
     private final FlowerRepository flowerRepository;
 
     @PostMapping("/text")
@@ -120,6 +128,21 @@ public class FlowerController {
         }
 
         return ResponseEntity.ok(result);
+    }
+
+    // 유사 부케 조회
+    @GetMapping("/{id}/similar")
+    @Operation(
+            summary = "유사 부케 조회",
+            description = "주어진 Flower ID를 기준으로 코사인 유사도를 사용하여 가장 유사한 부케 4개를 조회합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "유사 부케 4개 조회 성공",
+                            content = @Content(array = @ArraySchema(schema = @Schema(implementation = BouquetResponseDto.class)))),
+                    @ApiResponse(responseCode = "404", description = "해당 Flower ID를 찾을 수 없음")
+            }
+    )
+    public List<BouquetResponseDto> getSimilarBouquets(@PathVariable("id") Long flowerId) {
+        return bouquetService.getSimilarBouquets(flowerId);
     }
 }
 

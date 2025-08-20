@@ -1,7 +1,9 @@
 package com.example.gaehwa2.entity;
 
+import com.pgvector.PGvector;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Array;
 import org.hibernate.annotations.JdbcType;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -53,9 +55,10 @@ public class Flower {
     @Column(name = "card_voice", nullable = true)
     private byte[] cardVoice;
 
-//    @Column(columnDefinition = "vector(15)")
-//    @Convert(converter = VectorConverter.class)
-//    private float[] recommendRgbVector;
+    @Column(name = "recommend_rgb_vector", columnDefinition = "vector(15)")
+    @Convert(converter = PGvectorConverter.class)
+    private PGvector recommendRgbVector;
+
 
     @Column(columnDefinition = "TEXT")
     private String recommendMessage;

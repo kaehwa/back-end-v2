@@ -10,7 +10,7 @@ spring:
       static-locations: file:/Users/kimjieun/Desktop/upload/
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/gaehwa?currentSchema=public&characterEncoding=UTF-8
+    url: jdbc:postgresql://localhost:5432/gaehwa?currentSchema=public&characterEncoding=UTF-8&stringtype=unspecified
     driver-class-name: org.postgresql.Driver
     username: gaehwa
     password: ${DB_PASSWORD}
