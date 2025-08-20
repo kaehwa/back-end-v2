@@ -31,27 +31,44 @@ public class BouquetService {
 //        ).collect(Collectors.toList());
 //
 //    }
-public List<BouquetResponseDto> getSimilarBouquets(Long flowerId) {
-    List<Bouquet> bouquets = bouquetRepository.findTop4ByCosineSimilarity(flowerId);
 
-    return bouquets.stream().map(b -> {
-        String imageBase64 = null;
-        byte[] imageBytes = b.getBouquetImage(); // 이미 byte[]라면 이거만으로 충분
+    public List<BouquetResponseDto> getSimilarBouquets(Long flowerId) {
+        List<Bouquet> bouquets = bouquetRepository.findTop4ByCosineSimilarity(flowerId);
 
-        if (imageBytes != null) {
-            imageBase64 = Base64.getEncoder().encodeToString(imageBytes);
-        }
+        return bouquets.stream().map(b -> {
+            String imageBase64 = null;
+            byte[] imageBytes = null;
 
-        return BouquetResponseDto.builder()
-                .id(b.getId())
-                .name(b.getBouquetName())
-                .imageBase64(imageBase64)
-                .rgb(b.getBouquetRgb() != null ? convertVectorToIntList(b.getBouquetRgb()) : null)
-                .anniversaryName(b.getAnniversaryName())
-                .emotionName(b.getEmotion())
-                .build();
-    }).collect(Collectors.toList());
-}
+            Object imageObject = b.getBouquetImage(); // 이미지 객체 가져오기
+
+            if (imageObject != null) {
+                if (imageObject instanceof byte[]) {
+                    imageBytes = (byte[]) imageObject;
+                } else if (imageObject instanceof Byte[]) {
+                    Byte[] byteObjects = (Byte[]) imageObject;
+                    imageBytes = new byte[byteObjects.length];
+                    for (int i = 0; i < byteObjects.length; i++) {
+                        imageBytes[i] = byteObjects[i]; // Byte → byte 변환
+                    }
+                }
+            }
+
+            if (imageBytes != null) {
+                imageBase64 = Base64.getEncoder().encodeToString(imageBytes);
+            }
+
+            return BouquetResponseDto.builder()
+                    .id(b.getId())
+                    .name(b.getBouquetName())
+                    .imageBase64(imageBase64)
+                    .rgb(b.getBouquetRgb() != null ? convertVectorToIntList(b.getBouquetRgb()) : null)
+                    .anniversaryName(b.getAnniversaryName())
+                    .emotionName(b.getEmotion())
+                    .build();
+        }).collect(Collectors.toList());
+    }
+
+
 
 
 

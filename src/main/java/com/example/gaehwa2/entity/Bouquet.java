@@ -22,6 +22,7 @@ public class Bouquet {
     // 이미지
     @Lob
     @JdbcTypeCode(SqlTypes.BINARY)  // bytea 대응
+    @Column(name = "bouquet_image", columnDefinition = "bytea")
     private byte[] bouquetImage;
 
     // RGB 5개 벡터 (15차원)
