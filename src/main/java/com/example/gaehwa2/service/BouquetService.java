@@ -31,28 +31,29 @@ public class BouquetService {
 //        ).collect(Collectors.toList());
 //
 //    }
+public List<BouquetResponseDto> getSimilarBouquets(Long flowerId) {
+    List<Bouquet> bouquets = bouquetRepository.findTop4ByCosineSimilarity(flowerId);
 
-    public List<BouquetResponseDto> getSimilarBouquets(Long flowerId) {
-        List<Bouquet> bouquets = bouquetRepository.findTop4ByCosineSimilarity(flowerId);
+    return bouquets.stream().map(b -> {
+        String imageBase64 = null;
+        byte[] imageBytes = b.getBouquetImage(); // 이미 byte[]라면 이거만으로 충분
 
-        return bouquets.stream().map(b -> {
-            String imageBase64 = null;
-            byte[] imageBytes = b.getBouquetImage();
+        if (imageBytes != null) {
+            imageBase64 = Base64.getEncoder().encodeToString(imageBytes);
+        }
 
-            if (imageBytes != null) {
-                imageBase64 = Base64.getEncoder().encodeToString(imageBytes);
-            }
+        return BouquetResponseDto.builder()
+                .id(b.getId())
+                .name(b.getBouquetName())
+                .imageBase64(imageBase64)
+                .rgb(b.getBouquetRgb() != null ? convertVectorToIntList(b.getBouquetRgb()) : null)
+                .anniversaryName(b.getAnniversaryName())
+                .emotionName(b.getEmotion())
+                .build();
+    }).collect(Collectors.toList());
+}
 
-            return BouquetResponseDto.builder()
-                    .id(b.getId())
-                    .name(b.getBouquetName())
-                    .imageBase64(imageBase64)
-                    .rgb(b.getBouquetRgb() != null ? convertVectorToIntList(b.getBouquetRgb()) : null)
-                    .anniversaryName(b.getAnniversaryName())
-                    .emotionName(b.getEmotion())
-                    .build();
-        }).collect(Collectors.toList());
-    }
+
 
 
     private List<List<Integer>> convertVectorToIntList(com.pgvector.PGvector vector) {
