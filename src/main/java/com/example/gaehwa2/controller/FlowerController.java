@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,10 +42,16 @@ public class FlowerController {
 
     private final FlowerService flowerService;
     private final BouquetService bouquetService;
-    private final FlowerRepository flowerRepository;
+
     private final MedialetterRepository medialetterRepository;
-    private BouquetRepository bouquetRepository;
+
     private final FastApiService fastApiService; // FastAPI 호출 + MP3/MP4 다운로드/업로드 처리
+    @Autowired
+    private BouquetRepository bouquetRepository;
+
+    @Autowired
+    private FlowerRepository flowerRepository;
+
 
 
     @PostMapping("/text")
