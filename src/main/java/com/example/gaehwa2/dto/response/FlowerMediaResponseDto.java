@@ -11,7 +11,7 @@ public class FlowerMediaResponseDto {
     private String recommendMessage;
     private String bouquetVideoUrl;
     private PGvector bouquetRgb;
-    private byte[] voiceletter;
+    private String voiceletterBase64;
     private String videoletterUrl;
 }
 

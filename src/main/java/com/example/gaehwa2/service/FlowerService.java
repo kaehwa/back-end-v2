@@ -2,7 +2,10 @@ package com.example.gaehwa2.service;
 
 import com.example.gaehwa2.dto.request.FlowerRequestDto;
 import com.example.gaehwa2.dto.response.FastApiRecommendResponseDto;
+import com.example.gaehwa2.dto.response.FlowerMediaResponseDto;
+import com.example.gaehwa2.entity.Bouquet;
 import com.example.gaehwa2.entity.Flower;
+import com.example.gaehwa2.entity.Medialetter;
 import com.example.gaehwa2.repository.FlowerRepository;
 import com.example.gaehwa2.utils.ColorUtils;
 import com.pgvector.PGvector;
@@ -87,6 +90,35 @@ public class FlowerService {
                 .orElseThrow(() -> new RuntimeException("Flower not found"));
         flower.setRecommendMessage(recommendMessage);
         return flower.getRecommendMessage();
+    }
+
+    @Transactional(readOnly = true)
+    public FlowerMediaResponseDto getFlowerMedia(Long id) {
+        // 1. Flower 조회
+        Flower flower = flowerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Flower ID not found"));
+
+        // 2. Medialetter 조회
+        Medialetter medialetter = flower.getMedialetter();
+
+        // 3. Bouquet 조회
+        Bouquet bouquet = flower.getBouquet();
+
+        // 4. voiceletter Base64 인코딩
+        String voiceletterBase64 = null;
+        if (medialetter != null && medialetter.getVoiceletter() != null) {
+            voiceletterBase64 = Base64.getEncoder().encodeToString(medialetter.getVoiceletter());
+        }
+
+        // 5. Response DTO 구성
+        return FlowerMediaResponseDto.builder()
+                .flowerId(flower.getId())
+                .recommendMessage(flower.getRecommendMessage())
+                .bouquetVideoUrl(bouquet != null ? bouquet.getBouquetVideoUrl() : null)
+                .bouquetRgb(bouquet != null ? bouquet.getBouquetRgb() : null)
+                .voiceletterBase64(voiceletterBase64)
+                .videoletterUrl(medialetter != null ? medialetter.getVideoletterUrl() : null)
+                .build();
     }
 
 
