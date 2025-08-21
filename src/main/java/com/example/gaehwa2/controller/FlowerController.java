@@ -26,6 +26,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -157,69 +158,67 @@ public class FlowerController {
         return bouquetService.getSimilarBouquets(flowerId);
     }
 
-    @PostMapping("/flowers/{id}/bouquet-selection")
+    @Operation(
+            summary = "꽃 선택 API",
+            description = "특정 Flower에 대해 사용자가 선택한 Bouquet를 저장합니다."
+    )
+    @PostMapping("/{id}/bouquet-selection")
     public ResponseEntity<Void> selectBouquet(
             @PathVariable Long id,
             @RequestBody BouquetSelectionRequest request
     ) {
-        try {
-            // 1. Flower 조회
-            Flower flower = flowerRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Flower not found"));
+        // Flower 조회
+        Flower flower = flowerRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Flower not found"));
 
-            // 2. Bouquet 조회
-            Bouquet bouquet = bouquetRepository.findById(request.getSelectedBouquetId())
-                    .orElseThrow(() -> new RuntimeException("Bouquet not found"));
+        // Bouquet 조회
+        Bouquet bouquet = bouquetRepository.findById(request.getSelectedBouquetId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bouquet not found"));
 
-            // 3. Flower에 선택된 Bouquet 저장
-            flower.setBouquet(bouquet);
-            flowerRepository.save(flower);
+        // Flower에 선택된 Bouquet 저장
+        flower.setBouquet(bouquet);
+        flowerRepository.save(flower);
 
-            // 4. 성공 시 201 Created 반환
-            return ResponseEntity.status(HttpStatus.CREATED).build();
-
-        } catch (Exception e) {
-            // 실패 시 500 반환
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-
-
+    @Operation(
+            summary = "Medialetter 생성 API",
+            description = "Flower의 cardImage와 cardVoice를 기반으로 FastAPI 호출 후 Medialetter를 생성/업데이트 합니다."
+    )
     @PostMapping("/{id}/medialetter")
-    public ResponseEntity<FlowerMediaResponseDto> generateFlowerMedia(@PathVariable Long id) throws IOException {
-        try {
-            // 1. Flower 조회
-            Flower flower = flowerRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Flower ID not found"));
+    public ResponseEntity<Void> generateFlowerMedia(@PathVariable Long id) throws IOException {
 
-            // 2. FastAPI /tts/clone 호출 -> voiceletter 저장
-            byte[] voiceletter = fastApiService.callTtsClone(flower.getCardVoice(), flower.getRecommendMessage());
+        // 1. Flower 조회
+        Flower flower = flowerRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Flower ID not found"));
 
-            // 3. FastAPI /oneclick 호출 -> Azure Blob 저장, URL 얻기
-            String videoUrl = fastApiService.callOneClick(flower.getCardImage(), flower.getHistory());
+        // 2. FastAPI /tts/clone 호출 -> voiceletter 저장
+        byte[] voiceletter = fastApiService.callTtsClone(flower.getCardVoice(), flower.getRecommendMessage());
 
-            // 4. Medialetter 생성/업데이트
-            Medialetter medialetter = flower.getMedialetter();
-            if (medialetter == null) {
-                medialetter = new Medialetter();
-                medialetter.setFlower(flower);
-            }
-            medialetter.setVoiceletter(voiceletter);
-            medialetter.setVideoletterUrl(videoUrl);
-            medialetterRepository.save(medialetter);
+        // 3. FastAPI /oneclick 호출 -> Azure Blob 저장, URL 얻기
+        String videoUrl = fastApiService.callOneClick(flower.getCardImage(), flower.getHistory());
 
-            flower.setMedialetter(medialetter); // 양방향 연결
-
-            // 성공 시 201 Created 반환
-            return ResponseEntity.status(HttpStatus.CREATED).build();
-
-        } catch (Exception e) {
-            // 실패 시 500 Internal Server Error (or 400 등 커스텀 가능)
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        // 4. Medialetter 생성/업데이트
+        Medialetter medialetter = flower.getMedialetter();
+        if (medialetter == null) {
+            medialetter = new Medialetter();
+            medialetter.setFlower(flower);
         }
+        medialetter.setVoiceletter(voiceletter);
+        medialetter.setVideoletterUrl(videoUrl);
+        medialetterRepository.save(medialetter);
+
+        flower.setMedialetter(medialetter); // 양방향 연결
+
+        // 5. 성공만 알려주면 됨
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    @Operation(
+            summary = "Flower Medialetter 조회 API",
+            description = "특정 Flower의 Medialetter 정보를 조회합니다."
+    )
     @GetMapping("/{id}/medialetter")
     public ResponseEntity<FlowerMediaResponseDto> getFlowerMedia(@PathVariable Long id) {
         return ResponseEntity.ok(flowerService.getFlowerMedia(id));
