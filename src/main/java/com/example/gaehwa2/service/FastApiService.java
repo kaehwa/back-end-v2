@@ -97,10 +97,13 @@ public class FastApiService {
                 Map.class
         );
 
-        String savedPath = (String) response.getBody().get("saved_path");
-
-        // Azure Blob 업로드
+//        String savedPath = (String) response.getBody().get("saved_path");
+//
+//        // Azure Blob 업로드
+//        return azureBlobService.uploadFile(savedPath, "videos/flower_" + System.currentTimeMillis() + ".mp4");
+        String savedPath = "/home/gaehwa/veo/generate_video/generate_outputs/veo_output.mp4";
         return azureBlobService.uploadFile(savedPath, "videos/flower_" + System.currentTimeMillis() + ".mp4");
+
     }
 
     private HttpHeaders createMultipartHeaders() {
