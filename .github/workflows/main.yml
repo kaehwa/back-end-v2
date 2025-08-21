@@ -59,4 +59,4 @@ jobs:
               kill -9 $PID
             fi
             cd /home/gaehwa/back_end
-            nohup java -jar ${{ env.NEW_JAR }} > gaehwa.log 2>&1 &
+            #nohup java -jar ${{ env.NEW_JAR }} > gaehwa.log 2>&1 &
