@@ -67,8 +67,13 @@ public class FastApiService {
         );
 
         // URL에서 mp3 다운로드
-        String mp3Url = (String) response.getBody().get("http://localhost:9000/static/voice_final.mp3");
+        // 항상 고정 절대 URL 사용
+        String mp3Url = "http://localhost:9000/outputs/voice_final.mp3";
+
+// 다운로드
         return restTemplate.getForObject(mp3Url, byte[].class);
+//        String mp3Url = (String) response.getBody().get("http://localhost:9000/static/voice_final.mp3");
+//        return restTemplate.getForObject(mp3Url, byte[].class);
     }
 
     public String callOneClick(byte[] imageFile, String userText) throws IOException {
