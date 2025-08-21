@@ -3,10 +3,15 @@ package com.example.gaehwa2.controller;
 import com.example.gaehwa2.dto.request.FlowerRequestDto;
 import com.example.gaehwa2.dto.request.RecommendMessageRequestDto;
 import com.example.gaehwa2.dto.response.BouquetResponseDto;
+import com.example.gaehwa2.dto.response.FlowerMediaResponseDto;
 import com.example.gaehwa2.dto.response.RecommendMessageResponseDto;
+import com.example.gaehwa2.entity.Bouquet;
 import com.example.gaehwa2.entity.Flower;
+import com.example.gaehwa2.entity.Medialetter;
 import com.example.gaehwa2.repository.FlowerRepository;
+import com.example.gaehwa2.repository.MedialetterRepository;
 import com.example.gaehwa2.service.BouquetService;
+import com.example.gaehwa2.service.FastApiService;
 import com.example.gaehwa2.service.FlowerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -33,6 +38,9 @@ public class FlowerController {
     private final FlowerService flowerService;
     private final BouquetService bouquetService;
     private final FlowerRepository flowerRepository;
+    private final MedialetterRepository medialetterRepository;
+    private final FastApiService fastApiService; // FastAPI 호출 + MP3/MP4 다운로드/업로드 처리
+
 
     @PostMapping("/text")
     @Operation(summary = "꽃 주문 정보 저장", description = "누가, 누구에게, 관계, 무슨 날, 선물 예정일, 히스토리를 저장합니다.")
@@ -143,6 +151,48 @@ public class FlowerController {
     )
     public List<BouquetResponseDto> getSimilarBouquets(@PathVariable("id") Long flowerId) {
         return bouquetService.getSimilarBouquets(flowerId);
+    }
+
+
+    @PostMapping("/{id}/media")
+    public ResponseEntity<FlowerMediaResponseDto> generateFlowerMedia(@PathVariable Long id) throws IOException {
+
+        // 1. Flower 조회
+        Flower flower = flowerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Flower ID not found"));
+
+        // 2. FastAPI /tts/clone 호출 -> voiceletter 저장
+        byte[] voiceletter = fastApiService.callTtsClone(flower.getCardVoice(), flower.getRecommendMessage());
+
+        // 3. FastAPI /oneclick 호출 -> Azure Blob 저장, URL 얻기
+        String videoUrl = fastApiService.callOneClick(flower.getCardImage(), flower.getHistory());
+
+        // 4. Medialetter 생성/업데이트
+        Medialetter medialetter = flower.getMedialetter();
+        if (medialetter == null) {
+            medialetter = new Medialetter();
+            medialetter.setFlower(flower);
+        }
+        medialetter.setVoiceletter(voiceletter);
+        medialetter.setVideoletterUrl(videoUrl);
+        medialetterRepository.save(medialetter);
+
+        flower.setMedialetter(medialetter); // 양방향 연결
+
+        // 5. Bouquet 정보 조회
+        Bouquet bouquet = flower.getBouquet();
+
+        // 6. Response DTO 구성
+        FlowerMediaResponseDto response = FlowerMediaResponseDto.builder()
+                .flowerId(flower.getId())
+                .recommendMessage(flower.getRecommendMessage())
+                .bouquetVideoUrl(bouquet != null ? bouquet.getBouquetVideoUrl() : null)
+                .bouquetRgb(bouquet != null ? bouquet.getBouquetRgb() : null)
+                .voiceletter(voiceletter)
+                .videoletterUrl(videoUrl)
+                .build();
+
+        return ResponseEntity.ok(response);
     }
 }
 

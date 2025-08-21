@@ -62,5 +62,17 @@ public class Flower {
 
     @Column(columnDefinition = "TEXT")
     private String recommendMessage;
+
+    // ----------- 연관관계 ------------
+
+    // Medialetter와 양방향 1:1 (Flower 기준: 주인 아님, mappedBy 사용)
+    @OneToOne(mappedBy = "flower", cascade = CascadeType.ALL, fetch = FetchType.LAZY) // 변경됨
+    private Medialetter medialetter;
+
+
+    // Bouquet와 단방향 1:1 (Flower → Bouquet)
+    @OneToOne(fetch = FetchType.LAZY) // 변경됨
+    @JoinColumn(name = "bouquet_id") // FK 컬럼 추가됨
+    private Bouquet bouquet;
 }
 

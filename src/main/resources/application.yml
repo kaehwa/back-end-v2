@@ -32,6 +32,12 @@ server:
   port: 8080
   address: 0.0.0.0
 
+azure:
+  storage:
+    account-name: ${STORAGE_NAME}
+    account-key: ${STORAGE_KEY}
+    container-name: ${STORAGE_CONTAINER_NAME}
+
 file:
   upload-dir: /Users/kimjieun/Desktop/upload/
 

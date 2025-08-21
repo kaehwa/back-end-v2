@@ -10,6 +10,10 @@ public class Gaehwa2Application {
     public static void main(String[] args) {
         Dotenv dotenv = Dotenv.load(); // .env 읽기
         System.setProperty("DB_PASSWORD", dotenv.get("DB_PASSWORD")); // 환경 변수로 설정
+        System.setProperty("STORAGE_NAME", dotenv.get("STORAGE_NAME"));
+        System.setProperty("STORAGE_KEY", dotenv.get("STORAGE_KEY"));
+        System.setProperty("STORAGE_CONTAINER_NAME", dotenv.get("STORAGE_CONTAINER_NAME"));
+
         SpringApplication.run(Gaehwa2Application.class, args);
     }
 }

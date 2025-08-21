@@ -17,20 +17,6 @@ public class BouquetService {
 
     private final BouquetRepository bouquetRepository;
 
-//    public List<BouquetResponseDto> getSimilarBouquets(Long flowerId) {
-//        List<Bouquet> bouquets = bouquetRepository.findTop4ByCosineSimilarity(flowerId);
-//
-//        return bouquets.stream().map(b -> BouquetResponseDto.builder()
-//                .id(b.getId())
-//                .name(b.getBouquetName())
-//                .imageBase64(b.getBouquetImage() != null ? Base64.getEncoder().encodeToString(b.getBouquetImage()) : null)
-//                .rgb(b.getBouquetRgb() != null ? convertVectorToIntList(b.getBouquetRgb()) : null)
-//                .anniversaryName(b.getAnniversaryName())
-//                .emotionName(b.getEmotion())
-//                .build()
-//        ).collect(Collectors.toList());
-//    }
-
     public List<BouquetResponseDto> getSimilarBouquets(Long flowerId) {
         List<Bouquet> bouquets = bouquetRepository.findTop4ByCosineSimilarity(flowerId);
 
@@ -54,10 +40,6 @@ public class BouquetService {
                     .build();
         }).collect(Collectors.toList());
     }
-
-
-
-
 
     private List<List<Integer>> convertVectorToIntList(com.pgvector.PGvector vector) {
         List<List<Integer>> rgbList = new java.util.ArrayList<>();
