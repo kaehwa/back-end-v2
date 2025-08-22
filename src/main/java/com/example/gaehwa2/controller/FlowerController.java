@@ -61,9 +61,11 @@ public class FlowerController {
         return ResponseEntity.ok(flowerService.saveFlowerText(dto));
     }
 
+    public record FlowerResponse(Long id, String flowerTo, String flowerFrom) {}
+
     @PostMapping(value = "/{id}/image", consumes = "multipart/form-data")
     @Operation(summary = "꽃 카드 이미지 업로드(png,jpg,jpeg 혹시나 오류날까봐 확장자 제한, 10mb(error413,크기제한) 걸어놨슴다~)", description = "꽃 ID를 기반으로 카드 이미지를 업로드합니다.")
-    public ResponseEntity<Flower> saveFlowerImage(
+    public ResponseEntity<FlowerResponse> saveFlowerImage(
             @PathVariable Long id,
             @RequestParam("file") MultipartFile file) throws IOException {
         String filename = file.getOriginalFilename();
@@ -71,7 +73,13 @@ public class FlowerController {
                 !(filename.endsWith(".png") || filename.endsWith(".jpg") || filename.endsWith(".jpeg"))) {
             throw new IllegalArgumentException("지원하지 않는 이미지 파일 형식입니다. (.png, .jpg, .jpeg만 가능)");
         }
-        return ResponseEntity.ok(flowerService.saveFlowerImage(id, file));
+        //return ResponseEntity.ok(flowerService.saveFlowerImage(id, file));
+        Flower flower = flowerService.saveFlowerImage(id, file);
+        return ResponseEntity.ok(new FlowerResponse(
+                flower.getId(),
+                flower.getFlowerTo(),
+                flower.getFlowerFrom()
+        ));
     }
 
 //    @PostMapping(value = "/{id}/voice", consumes = "multipart/form-data")
@@ -86,8 +94,6 @@ public class FlowerController {
 //        }
 //        return ResponseEntity.ok(flowerService.saveFlowerVoice(id, file));
 //    }
-
-    public record FlowerResponse(Long id, String flowerTo, String flowerFrom) {}
 
     @PostMapping(value = "/{id}/voice", consumes = "multipart/form-data")
     @Operation(summary = "꽃 카드 음성 업로드(mp3,wav, 10MB 제한)", description = "꽃 ID를 기반으로 카드 음성을 업로드합니다.")
