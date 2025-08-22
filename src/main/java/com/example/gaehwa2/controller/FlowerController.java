@@ -3,10 +3,7 @@ package com.example.gaehwa2.controller;
 import com.example.gaehwa2.dto.request.BouquetSelectionRequest;
 import com.example.gaehwa2.dto.request.FlowerRequestDto;
 import com.example.gaehwa2.dto.request.RecommendMessageRequestDto;
-import com.example.gaehwa2.dto.response.BouquetResponseDto;
-import com.example.gaehwa2.dto.response.FlowerFromToResponseDto;
-import com.example.gaehwa2.dto.response.FlowerMediaResponseDto;
-import com.example.gaehwa2.dto.response.RecommendMessageResponseDto;
+import com.example.gaehwa2.dto.response.*;
 import com.example.gaehwa2.entity.Bouquet;
 import com.example.gaehwa2.entity.Flower;
 import com.example.gaehwa2.entity.Medialetter;
@@ -61,67 +58,36 @@ public class FlowerController {
         return ResponseEntity.ok(flowerService.saveFlowerText(dto));
     }
 
-    public record FlowerResponse(Long id, String flowerTo, String flowerFrom) {}
-
     @PostMapping(value = "/{id}/image", consumes = "multipart/form-data")
-    @Operation(
-            summary = "꽃 카드 이미지 업로드(png,jpg,jpeg, 10MB 제한)",
-            description = "꽃 ID를 기반으로 카드 이미지를 업로드합니다."
-    )
-    public ResponseEntity<FlowerResponse> saveFlowerImage(
+    @Operation(summary = "꽃 카드 이미지 업로드(png,jpg,jpeg 혹시나 오류날까봐 확장자 제한, 10mb(error413,크기제한) 걸어놨슴다~)", description = "꽃 ID를 기반으로 카드 이미지를 업로드합니다.")
+    public ResponseEntity<MediaUploadResponseDto> saveFlowerImage(
             @PathVariable Long id,
             @RequestParam("file") MultipartFile file) throws IOException {
 
-        String filename = file.getOriginalFilename();
-        if (filename == null ||
-                !(filename.endsWith(".png") || filename.endsWith(".jpg") || filename.endsWith(".jpeg"))) {
+        if (file.getOriginalFilename() == null ||
+                !(file.getOriginalFilename().endsWith(".png") ||
+                        file.getOriginalFilename().endsWith(".jpg") ||
+                        file.getOriginalFilename().endsWith(".jpeg"))) {
             throw new IllegalArgumentException("지원하지 않는 이미지 파일 형식입니다. (.png, .jpg, .jpeg만 가능)");
         }
 
-        Flower flower = flowerService.saveFlowerImage(id, file);
-
-        FlowerResponse response = new FlowerResponse(
-                flower.getId(),
-                flower.getFlowerTo(),
-                flower.getFlowerFrom()
-        );
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(flowerService.saveFlowerImage(id, file));
     }
 
-
-//    @PostMapping(value = "/{id}/voice", consumes = "multipart/form-data")
-//    @Operation(summary = "꽃 카드 음성 업로드(mp3,wav 혹시나 오류날까봐 확장자 제한, 10mb(error413,크기제한) 걸어놨슴다~)", description = "꽃 ID를 기반으로 카드 음성을 업로드합니다.")
-//    public ResponseEntity<Flower> saveFlowerVoice(
-//            @PathVariable Long id,
-//            @RequestPart("file") MultipartFile file) throws IOException {
-//        String filename = file.getOriginalFilename();
-//        if (filename == null ||
-//                !(filename.endsWith(".mp3") || filename.endsWith(".wav"))) {
-//            throw new IllegalArgumentException("지원하지 않는 음성 파일 형식입니다. (.mp3, .wav만 가능)");
-//        }
-//        return ResponseEntity.ok(flowerService.saveFlowerVoice(id, file));
-//    }
-
     @PostMapping(value = "/{id}/voice", consumes = "multipart/form-data")
-    @Operation(summary = "꽃 카드 음성 업로드(mp3,wav, 10MB 제한)", description = "꽃 ID를 기반으로 카드 음성을 업로드합니다.")
-    public ResponseEntity<FlowerResponse> saveFlowerVoice(
+    @Operation(summary = "꽃 카드 음성 업로드(mp3,wav 혹시나 오류날까봐 확장자 제한, 10mb(error413,크기제한) 걸어놨슴다~)", description = "꽃 ID를 기반으로 카드 음성을 업로드합니다.")
+    public ResponseEntity<MediaUploadResponseDto> saveFlowerVoice(
             @PathVariable Long id,
-            @RequestPart("file") MultipartFile file) throws IOException {
-        String filename = file.getOriginalFilename();
-        if (filename == null ||
-                !(filename.endsWith(".mp3") || filename.endsWith(".wav"))) {
+            @RequestParam("file") MultipartFile file) throws IOException {
+
+        if (file.getOriginalFilename() == null ||
+                !(file.getOriginalFilename().endsWith(".mp3") ||
+                        file.getOriginalFilename().endsWith(".wav"))) {
             throw new IllegalArgumentException("지원하지 않는 음성 파일 형식입니다. (.mp3, .wav만 가능)");
         }
 
-        Flower flower = flowerService.saveFlowerVoice(id, file);
-        return ResponseEntity.ok(new FlowerResponse(
-                flower.getId(),
-                flower.getFlowerTo(),
-                flower.getFlowerFrom()
-        ));
+        return ResponseEntity.ok(flowerService.saveFlowerVoice(id, file));
     }
-
 
     // GET /api/flowers/{id}/message
     @GetMapping("/{id}/message")

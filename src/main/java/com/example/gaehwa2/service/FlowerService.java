@@ -4,6 +4,7 @@ import com.example.gaehwa2.dto.request.FlowerRequestDto;
 import com.example.gaehwa2.dto.response.FastApiRecommendResponseDto;
 import com.example.gaehwa2.dto.response.FlowerFromToResponseDto;
 import com.example.gaehwa2.dto.response.FlowerMediaResponseDto;
+import com.example.gaehwa2.dto.response.MediaUploadResponseDto;
 import com.example.gaehwa2.entity.Bouquet;
 import com.example.gaehwa2.entity.Flower;
 import com.example.gaehwa2.entity.Medialetter;
@@ -56,25 +57,25 @@ public class FlowerService {
 
     }
     // 2. 이미지 저장
-    public Flower saveFlowerImage(Long id, MultipartFile file) throws IOException {
+    public MediaUploadResponseDto saveFlowerImage(Long id, MultipartFile file) throws IOException {
         Flower flower = flowerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("해당 ID의 꽃 데이터를 찾을 수 없습니다."));
 
-        // MultipartFile에서 바로 byte[] 저장
         flower.setCardImage(file.getBytes());
+        flowerRepository.save(flower);
 
-        return flowerRepository.save(flower);
+        return MediaUploadResponseDto.fromEntity(flower);
     }
 
     // 3. 음성 저장
-    public Flower saveFlowerVoice(Long id, MultipartFile file) throws IOException {
+    public MediaUploadResponseDto saveFlowerVoice(Long id, MultipartFile file) throws IOException {
         Flower flower = flowerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("해당 ID의 꽃 데이터를 찾을 수 없습니다."));
 
-        // MultipartFile에서 바로 byte[] 저장
         flower.setCardVoice(file.getBytes());
+        flowerRepository.save(flower);
 
-        return flowerRepository.save(flower);
+        return MediaUploadResponseDto.fromEntity(flower);
     }
 
 
