@@ -70,9 +70,10 @@ public class Flower {
     private Medialetter medialetter;
 
 
-    // Bouquet와 단방향 1:1 (Flower → Bouquet)
-    @OneToOne(fetch = FetchType.LAZY) // 변경됨
-    @JoinColumn(name = "bouquet_id") // FK 컬럼 추가됨
+    // Bouquet와 다대일 관계 (여러 Flower가 같은 Bouquet를 선택 가능)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bouquet_id")
     private Bouquet bouquet;
+
 }
 
