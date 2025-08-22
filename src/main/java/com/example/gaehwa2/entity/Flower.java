@@ -1,5 +1,6 @@
 package com.example.gaehwa2.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.pgvector.PGvector;
 import jakarta.persistence.*;
 import lombok.*;
@@ -65,10 +66,13 @@ public class Flower {
 
     // ----------- 연관관계 ------------
 
-    // Medialetter와 양방향 1:1 (Flower 기준: 주인 아님, mappedBy 사용)
-    @OneToOne(mappedBy = "flower", cascade = CascadeType.ALL, fetch = FetchType.LAZY) // 변경됨
-    private Medialetter medialetter;
+//    // Medialetter와 양방향 1:1 (Flower 기준: 주인 아님, mappedBy 사용)
+//    @OneToOne(mappedBy = "flower", cascade = CascadeType.ALL, fetch = FetchType.LAZY) // 변경됨
+//    private Medialetter medialetter;
 
+    @OneToOne(mappedBy = "flower")
+    @JsonManagedReference
+    private Medialetter medialetter;
 
     // Bouquet와 다대일 관계 (여러 Flower가 같은 Bouquet를 선택 가능)
     @ManyToOne(fetch = FetchType.LAZY)

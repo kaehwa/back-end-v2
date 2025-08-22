@@ -1,6 +1,7 @@
 package com.example.gaehwa2.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.pgvector.PGvector;
 import jakarta.persistence.*;
 import lombok.*;
@@ -33,6 +34,7 @@ public class Medialetter {
     // Flower와 양방향 1:1 (Medialetter가 연관관계의 주인)
     @OneToOne // 변경됨
     @JoinColumn(name = "flower_id") // FK 컬럼 생성됨
+    @JsonBackReference
     private Flower flower; // 변경됨
 
 }
