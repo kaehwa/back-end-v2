@@ -4,6 +4,7 @@ import com.example.gaehwa2.dto.request.BouquetSelectionRequest;
 import com.example.gaehwa2.dto.request.FlowerRequestDto;
 import com.example.gaehwa2.dto.request.RecommendMessageRequestDto;
 import com.example.gaehwa2.dto.response.BouquetResponseDto;
+import com.example.gaehwa2.dto.response.FlowerFromToResponseDto;
 import com.example.gaehwa2.dto.response.FlowerMediaResponseDto;
 import com.example.gaehwa2.dto.response.RecommendMessageResponseDto;
 import com.example.gaehwa2.entity.Bouquet;
@@ -229,6 +230,13 @@ public class FlowerController {
     @GetMapping("/{id}/medialetter")
     public ResponseEntity<FlowerMediaResponseDto> getFlowerMedia(@PathVariable Long id) {
         return ResponseEntity.ok(flowerService.getFlowerMedia(id));
+    }
+
+    @GetMapping("/{id}/from-to")
+    @Operation(summary = "보내는이/받는이 조회", description = "꽃을 보내는 사람과 받는 사람 정보를 불러옵니다")
+    public ResponseEntity<FlowerFromToResponseDto> getFlowerFromTo(@PathVariable Long id) {
+        FlowerFromToResponseDto response = flowerService.getFlowerFromTo(id);
+        return ResponseEntity.ok(response);
     }
 
 

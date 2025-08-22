@@ -2,6 +2,7 @@ package com.example.gaehwa2.service;
 
 import com.example.gaehwa2.dto.request.FlowerRequestDto;
 import com.example.gaehwa2.dto.response.FastApiRecommendResponseDto;
+import com.example.gaehwa2.dto.response.FlowerFromToResponseDto;
 import com.example.gaehwa2.dto.response.FlowerMediaResponseDto;
 import com.example.gaehwa2.entity.Bouquet;
 import com.example.gaehwa2.entity.Flower;
@@ -121,7 +122,17 @@ public class FlowerService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
+    public FlowerFromToResponseDto getFlowerFromTo(Long id) {
+        Flower flower = flowerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Flower ID not found"));
 
+        return FlowerFromToResponseDto.builder()
+                .id(flower.getId())
+                .flowerFrom(flower.getFlowerFrom())
+                .flowerTo(flower.getFlowerTo())
+                .build();
+    }
 }
 
 
