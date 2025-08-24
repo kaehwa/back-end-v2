@@ -116,40 +116,36 @@ public class FlowerService {
             voiceletterBase64 = Base64.getEncoder().encodeToString(medialetter.getVoiceletter());
         }
 
-        // DB에 저장된 원본 URL
-        String originalUrl = medialetter != null ? medialetter.getVideoletterUrl() : null;
-        String sasUrl = null;
-
-        if (originalUrl != null) {
-            // blobName 추출
+        // 5. Medialetter SAS URL
+        String videoletterSasUrl = null;
+        if (medialetter != null && medialetter.getVideoletterUrl() != null) {
             String blobName = URLDecoder.decode(
-                    originalUrl.substring(originalUrl.lastIndexOf("/") + 1),
-                    StandardCharsets.UTF_8
+                    medialetter.getVideoletterUrl().substring(
+                            medialetter.getVideoletterUrl().lastIndexOf("/") + 1
+                    ), StandardCharsets.UTF_8
             );
-            sasUrl = azureBlobService.generateSasUrl("gae-container", blobName);
+            videoletterSasUrl = azureBlobService.generateSasUrl("gae-container", blobName);
         }
 
-        // DB에 저장된 원본 URL
-        String originalUrl1 = medialetter != null ? bouquet.getBouquetVideoUrl() : null;
-        String sasUrl1 = null;
-
-        if (originalUrl1 != null) {
-            // blobName 추출
+        // 6. Bouquet SAS URL
+        String bouquetVideoSasUrl = null;
+        if (bouquet != null && bouquet.getBouquetVideoUrl() != null) {
             String blobName = URLDecoder.decode(
-                    originalUrl.substring(originalUrl.lastIndexOf("/") + 1),
-                    StandardCharsets.UTF_8
+                    bouquet.getBouquetVideoUrl().substring(
+                            bouquet.getBouquetVideoUrl().lastIndexOf("/") + 1
+                    ), StandardCharsets.UTF_8
             );
-            sasUrl1 = azureBlobService.generateSasUrl("gae-container", blobName);
+            bouquetVideoSasUrl = azureBlobService.generateSasUrl("gae-container", blobName);
         }
 
-        // 5. Response DTO 구성
+        // 7. Response DTO 구성
         return FlowerMediaResponseDto.builder()
                 .flowerId(flower.getId())
                 .recommendMessage(flower.getRecommendMessage())
-                .bouquetVideoUrl(sasUrl1)
+                .bouquetVideoUrl(bouquetVideoSasUrl)
                 .bouquetRgb(bouquet != null ? bouquet.getBouquetRgb() : null)
                 .voiceletterBase64(voiceletterBase64)
-                .videoletterUrl(sasUrl)
+                .videoletterUrl(videoletterSasUrl)
                 .build();
     }
 
