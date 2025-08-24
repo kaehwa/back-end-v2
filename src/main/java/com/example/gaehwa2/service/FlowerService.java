@@ -126,14 +126,27 @@ public class FlowerService {
                     originalUrl.substring(originalUrl.lastIndexOf("/") + 1),
                     StandardCharsets.UTF_8
             );
-            sasUrl = azureBlobService.generateSasUrl("gae-container", "videos/" + blobName);
+            sasUrl = azureBlobService.generateSasUrl("gae-container", blobName);
+        }
+
+        // DB에 저장된 원본 URL
+        String originalUrl1 = medialetter != null ? bouquet.getBouquetVideoUrl() : null;
+        String sasUrl1 = null;
+
+        if (originalUrl1 != null) {
+            // blobName 추출
+            String blobName = URLDecoder.decode(
+                    originalUrl.substring(originalUrl.lastIndexOf("/") + 1),
+                    StandardCharsets.UTF_8
+            );
+            sasUrl1 = azureBlobService.generateSasUrl("gae-container", blobName);
         }
 
         // 5. Response DTO 구성
         return FlowerMediaResponseDto.builder()
                 .flowerId(flower.getId())
                 .recommendMessage(flower.getRecommendMessage())
-                .bouquetVideoUrl(bouquet != null ? bouquet.getBouquetVideoUrl() : null)
+                .bouquetVideoUrl(sasUrl1)
                 .bouquetRgb(bouquet != null ? bouquet.getBouquetRgb() : null)
                 .voiceletterBase64(voiceletterBase64)
                 .videoletterUrl(sasUrl)
