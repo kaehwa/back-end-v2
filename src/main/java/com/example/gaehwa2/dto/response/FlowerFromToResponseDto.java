@@ -11,5 +11,6 @@ public class FlowerFromToResponseDto {
     private Long id;
     private String flowerFrom;
     private String flowerTo;
+    private String anniversary;
 }
 

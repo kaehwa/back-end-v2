@@ -162,6 +162,7 @@ public class FlowerService {
                 .id(flower.getId())
                 .flowerFrom(flower.getFlowerFrom())
                 .flowerTo(flower.getFlowerTo())
+                .anniversary(flower.getAnniversary())
                 .build();
     }
 }

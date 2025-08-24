@@ -11,10 +11,10 @@ import java.util.List;
 @Setter
 public class FlowerRequestDto {
 
-    @Schema(description = "누가?", example = "홍길동")
+    @Schema(description = "누가?", example = "철수")
     private String flowerFrom;
 
-    @Schema(description = "누구에게?", example = "홍길동")
+    @Schema(description = "누구에게?", example = "영희")
     private String flowerTo;
 
     @Schema(description = "관계", example = "친구")
