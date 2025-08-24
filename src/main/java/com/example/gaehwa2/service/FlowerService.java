@@ -18,6 +18,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -31,6 +33,8 @@ public class FlowerService {
 
     private final FlowerRepository flowerRepository;
     private final FastApiService fastApiService;
+    private final AzureBlobService azureBlobService;
+
     // 1. 텍스트 데이터 저장
     public Flower saveFlowerText(FlowerRequestDto dto) {
 
@@ -112,6 +116,19 @@ public class FlowerService {
             voiceletterBase64 = Base64.getEncoder().encodeToString(medialetter.getVoiceletter());
         }
 
+        // DB에 저장된 원본 URL
+        String originalUrl = medialetter != null ? medialetter.getVideoletterUrl() : null;
+        String sasUrl = null;
+
+        if (originalUrl != null) {
+            // blobName 추출
+            String blobName = URLDecoder.decode(
+                    originalUrl.substring(originalUrl.lastIndexOf("/") + 1),
+                    StandardCharsets.UTF_8
+            );
+            sasUrl = azureBlobService.generateSasUrl("gae-container", "videos/" + blobName);
+        }
+
         // 5. Response DTO 구성
         return FlowerMediaResponseDto.builder()
                 .flowerId(flower.getId())
@@ -119,7 +136,7 @@ public class FlowerService {
                 .bouquetVideoUrl(bouquet != null ? bouquet.getBouquetVideoUrl() : null)
                 .bouquetRgb(bouquet != null ? bouquet.getBouquetRgb() : null)
                 .voiceletterBase64(voiceletterBase64)
-                .videoletterUrl(medialetter != null ? medialetter.getVideoletterUrl() : null)
+                .videoletterUrl(sasUrl)
                 .build();
     }
 
