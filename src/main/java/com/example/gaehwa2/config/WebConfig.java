@@ -15,7 +15,7 @@ public class WebConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
                         // 허용할 프론트 주소들
-                        .allowedOrigins("http://localhost:8081", "http://4.240.103.29:8081", "http://4.240.103.29:8080", "http://localhost:8080")
+                        .allowedOrigins("http://localhost:8081", "http://4.240.103.29:8081", "http://4.240.103.29:8080", "http://localhost:8080", "http://danbee.shop")
                         .allowedMethods("*") // GET, POST, PUT, DELETE 등
                         .allowedHeaders("*") // 모든 헤더 허용
                         .allowCredentials(true); // 쿠키/인증정보 포함 허용
