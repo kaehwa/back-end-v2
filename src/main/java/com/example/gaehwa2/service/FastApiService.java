@@ -92,7 +92,7 @@ public class FastApiService {
         body.add("reuse_cached", true);
 
         ResponseEntity<Map> response = restTemplate.postForEntity(
-                "http://0.0.0.0:9001/oneclick",
+                "http://localhost:9001/oneclick",
                 new HttpEntity<>(body, createMultipartHeaders()),
                 Map.class
         );
